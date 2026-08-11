@@ -1,3 +1,13 @@
+import page1 from "../assets/lnct_page1.jpg";
+import page2 from "../assets/lnct_page2.jpg";
+import page3 from "../assets/lnct_page3.jpg";
+import page4 from "../assets/lnct_page4.jpg";
+import page5 from "../assets/lnct_page5.jpg";
+import page6 from "../assets/lnct_page6.jpg";
+import page7 from "../assets/lnct_page7.jpg";
+import page8 from "../assets/lnct_page8.jpg";
+import page9 from "../assets/lnct_page9.jpg";
+
 export const campusLocations = [
   {
     "id": "hanuman_temple",
@@ -3743,7 +3753,7 @@ export const campusPhotos = [
   {
     "id": "gal-1",
     "name": "1. Main Building & Front Lawn",
-    "image": "/src/assets/lnct_page1.jpg",
+    "image": page1,
     "locationId": "admin_office",
     "description": "Main building aerial perspective showing central dome, entrance steps, and green campus lawn.",
     "buildingName": "Lakshmi Narayan Block",
@@ -3754,7 +3764,7 @@ export const campusPhotos = [
   {
     "id": "gal-2",
     "name": "2. Campus Aerial View (Overall)",
-    "image": "/src/assets/lnct_page2.jpg",
+    "image": page2,
     "locationId": "admin_office",
     "description": "Wide high-angle aerial view of the LNCT campus layout.",
     "buildingName": "Lakshmi Narayan Block",
@@ -3765,7 +3775,7 @@ export const campusPhotos = [
   {
     "id": "gal-3",
     "name": "3. Charles Babbage Block",
-    "image": "/src/assets/lnct_page3.jpg",
+    "image": page3,
     "locationId": "academic_a",
     "description": "Charles Babbage Block with central circular porch and adjacent academic wings.",
     "buildingName": "Charles Babbage Block",
@@ -3776,7 +3786,7 @@ export const campusPhotos = [
   {
     "id": "gal-4",
     "name": "4. LNCT Excellence Building",
-    "image": "/src/assets/lnct_page4.jpg",
+    "image": page4,
     "locationId": "lnct_new_building_1",
     "description": "Curved modern building structure housing the LNCT Excellence academic departments.",
     "buildingName": "LNCT Excellence Building",
@@ -3787,7 +3797,7 @@ export const campusPhotos = [
   {
     "id": "gal-5",
     "name": "5. M.S. Swaminathan Block",
-    "image": "/src/assets/lnct_page5.jpg",
+    "image": page5,
     "locationId": "ms_swaminathan_block",
     "description": "M.S. Swaminathan Block research facility and adjacent agricultural plot grounds.",
     "buildingName": "M.S. Swaminathan Block",
@@ -3798,7 +3808,7 @@ export const campusPhotos = [
   {
     "id": "gal-6",
     "name": "6. Ram Nath Guha Block & Central Grounds",
-    "image": "/src/assets/lnct_page6.jpg",
+    "image": page6,
     "locationId": "ramnath_guha_block",
     "description": "High aerial shot over central green grounds, athletic facilities, and academic buildings.",
     "buildingName": "Ramnath Guha Block",
@@ -3809,7 +3819,7 @@ export const campusPhotos = [
   {
     "id": "gal-7",
     "name": "7. Campus Hostels & Sports Field",
-    "image": "/src/assets/lnct_page7.jpg",
+    "image": page7,
     "locationId": "tripuri_hostel",
     "description": "Overview of student residential hostels surrounding the main cricket ground.",
     "buildingName": "",
@@ -3820,7 +3830,7 @@ export const campusPhotos = [
   {
     "id": "gal-8",
     "name": "8. Jagdish Chandra Bose Block & Garden Foundation",
-    "image": "/src/assets/lnct_page8.jpg",
+    "image": page8,
     "locationId": "jc_bose_block",
     "description": "J.C. Bose Block surrounded by the garden foundation and green outer perimeter.",
     "buildingName": "Jagdish Chandra Bose Block",
@@ -3831,7 +3841,7 @@ export const campusPhotos = [
   {
     "id": "gal-9",
     "name": "9. Venue Details & LNCT Campus Map",
-    "image": "/src/assets/lnct_page9.jpg",
+    "image": page9,
     "locationId": "aryabhatta_auditorium",
     "description": "Official campus layout blueprint showing numbered locations and auditorium details.",
     "buildingName": "Aryabhatta Auditorium",

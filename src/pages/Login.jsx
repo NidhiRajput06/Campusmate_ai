@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import lnctLogo from "../assets/lnct_logo.jpg";
+import lnctMonsoonCampus from "../assets/lnct_monsoon_campus.jpg";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -216,7 +217,7 @@ export default function Login({ onLogin }) {
       <div 
         className="login-illustration-side"
         style={{
-          background: `linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%), url("/src/assets/lnct_monsoon_campus.jpg")`,
+          background: `linear-gradient(180deg, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%), url("${lnctMonsoonCampus}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           animation: "bgMotion 25s ease-in-out infinite",

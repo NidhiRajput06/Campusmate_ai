@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { campusLocations, campusEdges, campusPhotos } from "../data/campusData";
+import campusMapImage from "../assets/lnct_campus_map.jpg";
 import { Clock, Navigation, X, ZoomIn, ZoomOut, RotateCcw, Maximize2, Minimize2 } from "lucide-react";
 
 export default function Map({ 
@@ -546,7 +547,7 @@ export default function Map({
         >
           {/* Base Layer: High-quality Original LNCT Campus Map Image */}
           <image 
-            href="/src/assets/lnct_campus_map.jpg" 
+            href={campusMapImage} 
             x="0" 
             y="0" 
             width="800" 
