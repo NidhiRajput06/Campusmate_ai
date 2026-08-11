@@ -1,7 +1,7 @@
 # 🏫 CampusMate AI
 > **The Intelligent Campus Companion for LNCT University, Bhopal**
 
-CampusMate AI is a highly optimized, responsive student companion application designed specifically for the students, faculty, and visitors of Lakshmi Narain College of Technology (LNCT) University. It simplifies transit, campus navigation, academic discovery, and daily schedules into a single, mobile-first interface.
+CampusMate AI is a highly optimized, responsive student companion application designed specifically for the students, faculty, and visitors of Lakshmi Narain College of Technology (LNCT). It simplifies transit, campus navigation, academic discovery, and daily schedules into a single, mobile-first interface.
 
 ---
 
