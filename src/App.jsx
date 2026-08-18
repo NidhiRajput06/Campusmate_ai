@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "./utils/supabaseClient";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
@@ -17,6 +18,7 @@ export default function App() {
   // Session Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [studentInfo, setStudentInfo] = useState({ name: "Student", email: "student@university.edu" });
+  const [loading, setLoading] = useState(true);
 
   // Routing State
   const [currentPage, setCurrentPage] = useState("dashboard"); // default page
@@ -30,13 +32,48 @@ export default function App() {
   const [activeRoute, setActiveRoute] = useState(null);
   const [theme, setTheme] = useState("light");
 
-  const handleLogin = (info) => {
-    setStudentInfo(info);
-    setIsAuthenticated(true);
-    setCurrentPage("dashboard");
+  // Track Supabase Session Lifecycle (Part 4)
+  useEffect(() => {
+    // 1. Fetch current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
+    });
+
+    // 2. Listen to active auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      handleSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSession = async (session) => {
+    if (session) {
+      // Retrieve student profile from public.students table (Part 5)
+      const { data: profile } = await supabase
+        .from("students")
+        .select("full_name, email")
+        .eq("auth_user_id", session.user.id)
+        .single();
+
+      if (profile) {
+        setStudentInfo({ name: profile.full_name, email: profile.email });
+      } else {
+        setStudentInfo({ 
+          name: session.user.user_metadata?.full_name || "Student", 
+          email: session.user.email 
+        });
+      }
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+      setStudentInfo({ name: "Student", email: "student@university.edu" });
+    }
+    setLoading(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
     setSearchQuery("");
     setStartLocationId(null);
@@ -44,9 +81,24 @@ export default function App() {
     setActiveRoute(null);
   };
 
+  // Prevent flicker during session check
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "var(--bg-primary)" }}>
+        <div style={{ border: "4px solid var(--border-color)", borderTop: "4px solid var(--primary-color)", borderRadius: "50%", width: "40px", height: "40px", animation: "spin 1s linear infinite" }} />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   // Login check fallback
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return <Login />;
   }
 
   // Active page renderer

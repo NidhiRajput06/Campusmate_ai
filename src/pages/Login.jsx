@@ -1,36 +1,124 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
+import { supabase } from "../utils/supabaseClient";
 import lnctLogo from "../assets/lnct_logo.jpg";
 import lnctMonsoonCampus from "../assets/lnct_monsoon_campus.jpg";
 
-export default function Login({ onLogin }) {
+export default function Login() {
+  const [view, setView] = useState("login"); // "login", "register", "forgot"
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
-    // Seeded demo credentials verification (Part 19 & 20)
-    const cleanEmail = email.toLowerCase().trim();
-    if (cleanEmail !== "campusmate.demo" && cleanEmail !== "campusmate.demo@lnct.ac.in") {
-      setError("Invalid username/email. Use the demo account: campusmate.demo");
-      return;
-    }
-
-    if (password !== "demoPass_LNCT2025!") {
-      setError("Incorrect password. Use the demo password: demoPass_LNCT2025!");
-      return;
-    }
-
     setError("");
-    onLogin({ name: "Demo Student", email: "campusmate.demo@lnct.ac.in" });
+    setSuccessMessage("");
+    setLoading(true);
+
+    if (view === "login") {
+      if (!email || !password) {
+        setError("Please fill in all fields.");
+        setLoading(false);
+        return;
+      }
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
+      });
+
+      if (authError) {
+        if (authError.message.includes("Invalid login credentials")) {
+          setError("Wrong email or password. Please try again.");
+        } else {
+          setError(authError.message);
+        }
+        setLoading(false);
+        return;
+      }
+
+    } else if (view === "register") {
+      if (!fullName || !email || !password) {
+        setError("Please fill in all fields.");
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setLoading(false);
+        return;
+      }
+
+      // 1. Register account in Supabase Authentication (Part 2 & 6)
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: {
+            full_name: fullName.trim()
+          }
+        }
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (signUpData.user) {
+        // 2. Create profile entry in public.students table (Part 5)
+        const { error: dbError } = await supabase
+          .from("students")
+          .insert({
+            auth_user_id: signUpData.user.id,
+            full_name: fullName.trim(),
+            email: email.trim()
+          });
+
+        if (dbError) {
+          setError("Auth account created, but profile insertion failed: " + dbError.message);
+          setLoading(false);
+          return;
+        }
+
+        setSuccessMessage("Account registered successfully! Please sign in.");
+        setFullName("");
+        setEmail("");
+        setPassword("");
+        setView("login");
+      }
+    } else if (view === "forgot") {
+      if (!email) {
+        setError("Please enter your email address.");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Send password recovery email (Part 12)
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccessMessage("Password reset email sent! Please check your inbox.");
+      setEmail("");
+      setView("login");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -128,7 +216,7 @@ export default function Login({ onLogin }) {
 
       {/* Form side */}
       <div className="login-form-side animate-scale">
-        {/* LNCT Logo Header (Part 1 & 3) */}
+        {/* LNCT Logo Header */}
         <div className="login-logo" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
           <img src={lnctLogo} alt="LNCT Logo" style={{ width: "38px", height: "38px", objectFit: "contain", borderRadius: "4px" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -138,8 +226,16 @@ export default function Login({ onLogin }) {
         </div>
 
         <div>
-          <h2 className="login-title" style={{ fontWeight: 800 }}>Welcome Back 👋</h2>
-          <p className="login-subtitle">Access smart navigation and assistant services.</p>
+          <h2 className="login-title" style={{ fontWeight: 800 }}>
+            {view === "login" && "Welcome Back 👋"}
+            {view === "register" && "Create Account 🚀"}
+            {view === "forgot" && "Reset Password 🔑"}
+          </h2>
+          <p className="login-subtitle">
+            {view === "login" && "Access smart navigation and assistant services."}
+            {view === "register" && "Sign up for smart campus navigation & assistance."}
+            {view === "forgot" && "Enter your email to receive a password reset link."}
+          </p>
         </div>
 
         {error && (
@@ -159,61 +255,140 @@ export default function Login({ onLogin }) {
           </div>
         )}
 
-
+        {successMessage && (
+          <div 
+            style={{ 
+              padding: "12px", 
+              background: "rgba(16, 185, 129, 0.08)", 
+              border: "1px solid rgba(16, 185, 129, 0.2)", 
+              borderRadius: "8px", 
+              color: "var(--success-color)",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              marginBottom: "20px"
+            }}
+          >
+            ✓ {successMessage}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
+          {view === "register" && (
+            <div className="form-group animate-fade-in" style={{ animation: "fadeInUp 0.3s ease-out forwards" }}>
+              <label className="form-label">Full Name</label>
+              <input 
+                type="text" 
+                placeholder="e.g. John Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="input-focus-effect"
+                required
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <input 
-              type="text" 
+              type="email" 
               placeholder="e.g. student@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="input-focus-effect"
+              required
             />
           </div>
 
-          <div className="form-group" style={{ position: "relative" }}>
-            <label className="form-label">Password</label>
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-focus-effect"
-            />
-            <button
-              type="button"
-              className="password-toggle-btn"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-
-          <div className="form-options">
-            <label className="checkbox-label">
+          {view !== "forgot" && (
+            <div className="form-group" style={{ position: "relative" }}>
+              <label className="form-label">Password</label>
               <input 
-                type="checkbox" 
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-focus-effect"
+                required
               />
-              <span>Remember me</span>
-            </label>
-            <a href="#" className="forgot-password-link">Forgot Password?</a>
-          </div>
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          )}
 
-          <button type="submit" className="btn btn-primary login-btn btn-hover-effect">
-            Sign In
+          {view === "login" && (
+            <div className="form-options">
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>Remember me</span>
+              </label>
+              <a 
+                href="#" 
+                className="forgot-password-link"
+                onClick={(e) => { e.preventDefault(); setView("forgot"); setError(""); setSuccessMessage(""); }}
+              >
+                Forgot Password?
+              </a>
+            </div>
+          )}
+
+          <button type="submit" disabled={loading} className="btn btn-primary login-btn btn-hover-effect">
+            {loading ? "Processing..." : ""}
+            {!loading && view === "login" && "Sign In"}
+            {!loading && view === "register" && "Sign Up"}
+            {!loading && view === "forgot" && "Send Reset Link"}
           </button>
         </form>
 
-        <p className="register-text">
-          Don't have an account? <a href="#" className="register-link">Register here</a>
+        <p className="register-text" style={{ marginTop: "24px" }}>
+          {view === "login" && (
+            <>
+              Don't have an account?{" "}
+              <a 
+                href="#" 
+                className="register-link"
+                onClick={(e) => { e.preventDefault(); setView("register"); setError(""); setSuccessMessage(""); }}
+              >
+                Register here
+              </a>
+            </>
+          )}
+          {view === "register" && (
+            <>
+              Already have an account?{" "}
+              <a 
+                href="#" 
+                className="register-link"
+                onClick={(e) => { e.preventDefault(); setView("login"); setError(""); setSuccessMessage(""); }}
+              >
+                Sign In
+              </a>
+            </>
+          )}
+          {view === "forgot" && (
+            <>
+              Remember your password?{" "}
+              <a 
+                href="#" 
+                className="register-link"
+                onClick={(e) => { e.preventDefault(); setView("login"); setError(""); setSuccessMessage(""); }}
+              >
+                Back to Login
+              </a>
+            </>
+          )}
         </p>
       </div>
 
-      {/* Beautiful Side Panel containing the actual LNCT campus photograph (Part 4) */}
+      {/* Beautiful Side Panel containing the actual LNCT campus photograph */}
       <div 
         className="login-illustration-side"
         style={{
@@ -241,7 +416,6 @@ export default function Login({ onLogin }) {
             Navigate smarter. Travel easier. Explore LNCT.
           </p>
 
-          {/* Translucent overlay card */}
           <div 
             className="glass-panel" 
             style={{ 
