@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "./utils/supabaseClient";
+import { supabase, isSupabaseConfigured } from "./utils/supabaseClient";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
@@ -34,6 +34,11 @@ export default function App() {
 
   // Track Supabase Session Lifecycle (Part 4)
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     // 1. Fetch current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleSession(session);
@@ -73,13 +78,40 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
     setIsAuthenticated(false);
     setSearchQuery("");
     setStartLocationId(null);
     setDestinationLocationId(null);
     setActiveRoute(null);
   };
+
+  // 1. Render setup prompt if database credentials are not configured (Part 15)
+  if (!isSupabaseConfigured) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#F8FAFC", padding: "24px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ background: "white", padding: "40px 32px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.08)", maxWidth: "500px", width: "100%", border: "1px solid #E2E8F0", textAlign: "center" }}>
+          <div style={{ fontSize: "3rem", marginBottom: "20px" }}>⚙️</div>
+          <h2 style={{ color: "#1E293B", fontSize: "1.5rem", fontWeight: 800, marginBottom: "12px" }}>Database Setup Required</h2>
+          <p style={{ color: "#64748B", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "28px" }}>
+            CampusMate AI authentication is ready! To run the application, please configure your Supabase credentials in a <strong>.env</strong> file in your project directory.
+          </p>
+          
+          <div style={{ background: "#F1F5F9", padding: "16px", borderRadius: "8px", textAlign: "left", fontSize: "0.85rem", color: "#334155", fontFamily: "monospace", marginBottom: "28px", border: "1px solid #E2E8F0" }}>
+            <span style={{ color: "#64748B" }}># Create .env file in project root:</span><br/>
+            VITE_SUPABASE_URL=https://your-project.supabase.co<br/>
+            VITE_SUPABASE_ANON_KEY=your-api-anon-key
+          </div>
+
+          <p style={{ color: "#94A3B8", fontSize: "0.85rem", lineHeight: "1.4" }}>
+            Refer to the <strong>supabase_setup.sql</strong> file in your project folder to set up the database tables in your Supabase project.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Prevent flicker during session check
   if (loading) {
