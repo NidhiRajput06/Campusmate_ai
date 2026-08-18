@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { User, Bell, Eye, Languages, Accessibility, Check } from "lucide-react";
-import { supabase } from "../utils/supabaseClient";
 
 export default function Settings({
   studentInfo,
@@ -41,24 +40,11 @@ export default function Settings({
     { id: "accessibility", label: "Accessibility", icon: Accessibility }
   ];
 
-  const handleProfileSave = async (e) => {
+  const handleProfileSave = (e) => {
     e.preventDefault();
-    setSaveSuccess(false);
-
-    // Update student name in public.students table (Part 5 & 7)
-    const { error } = await supabase
-      .from("students")
-      .update({ full_name: nameInput })
-      .eq("email", studentInfo.email);
-
-    if (error) {
-      alert("Error saving profile details: " + error.message);
-      return;
-    }
-
     setStudentInfo({
       name: nameInput,
-      email: studentInfo.email
+      email: emailInput
     });
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -167,11 +153,7 @@ export default function Settings({
                     type="email" 
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
-                    disabled
                   />
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
-                    Registered email address is managed via credentials authentication.
-                  </span>
                 </div>
 
                 <div className="form-group">
